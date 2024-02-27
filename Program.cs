@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using AIContinuous;
+using AIContinuous.Nuenv;
 using Rocket;
 
 // double Rosenbrock(double[] x)
@@ -36,9 +37,20 @@ using Rocket;
 // Console.WriteLine($"Res: {res[0]} {res[1]} | Time: {sw.ElapsedMilliseconds}");
 
 
+double[] pointsTime = Space.Linear(0, 99, 10);
 
-
-for (int i = 0; i < length; i++)
+for (int i = 0; i < pointsTime.Length; i++)
 {
-    
+    Func
 }
+double Func(double[] x)
+{
+
+
+    return highest;
+}
+
+// for (int i = 0; i < length; i++)
+// {
+
+// }
