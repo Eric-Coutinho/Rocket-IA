@@ -2,53 +2,93 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AIContinuous.Nuenv;
 using AIContinuous.Rocket;
+using Desafio_Foguete.Rocket;
 
-namespace Rocket 
+namespace Rocket
 {
     public class Rocket
     {
-        public static double EmptyMass { get; set; } = 750;
-        public static double FuelMass { get; set; } = 3500;
-        public static double CurrentMass { get; set; } = EmptyMass + FuelMass;
-        public static double Diameter { get; set; } = 0.6;
-        public static double DragCoefficient { get; set; }
-        public static double GasExhaustSpeed { get; set; }
-        
+        public static double DryMass { get; set; }
+        public static double Area { get; set; }
+        public static double Ve { get; set; }
+        public static double Cd0 { get; set; }
+        public static double Height { get; set; }
+        public static double Velocity { get; set; }
+        public static double Mass { get; set; }
+        public double[] TimeData { get; set; }
+        public double[] MassFlowData { get; set; }
 
-        public static double Acceleration(double T, double D, double W, double m)
+        public Rocket(
+            double dryMass,
+            double area,
+            double ve,
+            double cd0,
+            double[] timeData,
+            double[] massFlowData
+            )
         {
-            return (T + D + W) / m;
+            DryMass = dryMass;
+            Area = area;
+            Ve = ve;
+            Cd0 = cd0;
+            TimeData = (double[])timeData.Clone();
+            MassFlowData = (double[])massFlowData.Clone();
+
+            Mass = DryMass + Integrate.Romberg(TimeData, MassFlowData);
         }
 
-        public static double Velocity(double a, double deltaT)
+        public double CalculateMassFlow(double t)
+            => Interp1D.Linear(TimeData, MassFlowData, t);
+
+        public static double CalculateGravity(double h, double m)
+            => -1.0 * m * Gravity.GetGravity(h);
+
+
+        public double CalculateDrag(double height, double v)
         {
-            return a * deltaT;
+            var temperature = Atmosphere.Temperature(height);
+            var cd = Drag.Coefficient(v, temperature, Cd0);
+            var density = Atmosphere.Density(height);
+
+            return -0.5 * cd * density * Area * (v * v) * Math.Sign(v);
         }
 
-        public static double Altitude(double v, double deltaT)
+        public double CalculateThrustForce(double t)
+            => CalculateMassFlow(t) * Ve;
+
+        public double Momentum(double t)
         {
-            return v * deltaT;
+            var thrust = CalculateThrustForce(t);
+            var drag = CalculateDrag(Velocity, Height);
+            var weight = CalculateGravity(Height, Mass);
+
+            return (thrust + drag + weight) / Mass;
         }
 
-        public static double ThrustForce(double Me, double Ve = 1916)
+        public void UpdateVelocity(double t, double dt)
         {
-            return Me * Ve;
+            var accel = Momentum(t);
+            Velocity = accel * dt;
         }
 
-        public static double DragForce(double deltaT, double height, double vel, double vdir, double Cd = 0.8)
+        public void UpdateHeight(double dt)
         {
-            double density = Atmosphere.Density(height);
-
-            double Area = Math.PI * Math.Pow(Diameter / 2, 2);
-
-            return -(1/2) * Cd * density * Area * (vel * vel) * vdir;
+            Height += Velocity * dt;
         }
 
-        public static double WeightForce(double currentMass, double currentHeight)
+        public void UpdateMass(double t, double dt)
         {
-            return -currentMass * Gravity.GetGravity(currentHeight);
+            Mass -=  0.5 * dt * (CalculateMassFlow(t) + CalculateMassFlow(t + dt));
         }
 
+        public void FlyALittleBit(double t, double dt)
+        {
+            UpdateVelocity(t,dt);
+            UpdateHeight(dt);
+            UpdateMass(t, dt);
+
+        }
     }
 }
