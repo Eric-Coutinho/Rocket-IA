@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AIContinuous.Nuenv;
 using AIContinuous.Rocket;
-using Desafio_Foguete.Rocket;
 
 namespace Rocket
 {
@@ -19,6 +18,7 @@ namespace Rocket
         public static double Mass { get; set; }
         public double[] TimeData { get; set; }
         public double[] MassFlowData { get; set; }
+        public double Time { get; set; }
 
         public Rocket(
             double dryMass,
@@ -36,11 +36,13 @@ namespace Rocket
             TimeData = (double[])timeData.Clone();
             MassFlowData = (double[])massFlowData.Clone();
 
+            Time = 0.0;
+
             Mass = DryMass + Integrate.Romberg(TimeData, MassFlowData);
         }
 
         public double CalculateMassFlow(double t)
-            => Interp1D.Linear(TimeData, MassFlowData, t);
+            => (t > TimeData[^1]) ? DryMass : Interp1D.Linear(TimeData, MassFlowData, t);
 
         public static double CalculateGravity(double h, double m)
             => -1.0 * m * Gravity.GetGravity(h);
@@ -56,7 +58,7 @@ namespace Rocket
         }
 
         public double CalculateThrustForce(double t)
-            => CalculateMassFlow(t) * Ve;
+            => (t > TimeData[^1]) ? 0.0 : CalculateMassFlow(t) * Ve;
 
         public double Momentum(double t)
         {
@@ -80,15 +82,40 @@ namespace Rocket
 
         public void UpdateMass(double t, double dt)
         {
-            Mass -=  0.5 * dt * (CalculateMassFlow(t) + CalculateMassFlow(t + dt));
+            Mass -= 0.5 * dt * (CalculateMassFlow(t) + CalculateMassFlow(t + dt));
         }
 
-        public void FlyALittleBit(double t, double dt)
+        public void FlyALittleBit(double dt)
         {
-            UpdateVelocity(t,dt);
+            UpdateVelocity(Time, dt);
             UpdateHeight(dt);
-            UpdateMass(t, dt);
+            UpdateMass(Time, dt);
 
+            Time += dt;
+        }
+
+        public double Launch(double time, double dt = 1e-1)
+        {
+            for (double t = 0; t < time; t += dt)
+                FlyALittleBit(dt);
+
+            return Height;
+        }
+
+        public double LaunchUntilMax(double dt = 1e-1)
+        {
+            do FlyALittleBit(dt);
+            while (Velocity > 0.0);
+
+            return Height;
+        }
+
+        public double LaunchUntilGround(double dt = 1e-1)
+        {
+            do FlyALittleBit(dt);
+            while (Height > 0.0);
+
+            return Height;
         }
     }
 }
