@@ -42,11 +42,13 @@ namespace Rocket
         }
 
         public double CalculateMassFlow(double t)
-            => (t > TimeData[^1]) ? DryMass : Interp1D.Linear(TimeData, MassFlowData, t);
+            => t > TimeData[^1] ? 0.0 : Interp1D.Linear(TimeData, MassFlowData, t);
+
+        public double CalculateThrustForce(double t)
+            => t > TimeData[^1] ? 0.0 : CalculateMassFlow(t) * Ve;
 
         public static double CalculateGravity(double h, double m)
             => -1.0 * m * Gravity.GetGravity(h);
-
 
         public double CalculateDrag(double height, double v)
         {
@@ -56,9 +58,6 @@ namespace Rocket
 
             return -0.5 * cd * density * Area * (v * v) * Math.Sign(v);
         }
-
-        public double CalculateThrustForce(double t)
-            => (t > TimeData[^1]) ? 0.0 : CalculateMassFlow(t) * Ve;
 
         public double Momentum(double t)
         {
