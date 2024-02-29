@@ -1,4 +1,6 @@
-namespace AIContinuous;
+using AIContinuous;
+
+namespace Optimize;
 
 public static class Optimize
 {
