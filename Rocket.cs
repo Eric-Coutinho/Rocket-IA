@@ -1,120 +1,114 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AIContinuous.Nuenv;
 using AIContinuous.Rocket;
 
-namespace Rocket
+namespace Rocket;
+public class Rocket
 {
-    public class Rocket
+    public double   DryMass          { get; set; }
+    public double   CrossSectionArea { get; set; }
+    public double   Ve               { get; set; }
+    public double   Cd0              { get; set; }
+    public double   Time             { get; set; }
+    public double   Height           { get; set; }
+    public double   Velocity         { get; set; }
+    public double   Mass             { get; set; }
+    public double[] TimeData         { get; set; }
+    public double[] MassFlowData     { get; set; }
+
+    public Rocket(
+        double dryMass, 
+        double crossSectionArea, 
+        double ve, 
+        double cd0,
+        double[] timeData,
+        double[] massFlowData
+        )
     {
-        public static double DryMass { get; set; }
-        public static double Area { get; set; }
-        public static double Ve { get; set; }
-        public static double Cd0 { get; set; }
-        public static double Height { get; set; }
-        public static double Velocity { get; set; }
-        public static double Mass { get; set; }
-        public double[] TimeData { get; set; }
-        public double[] MassFlowData { get; set; }
-        public double Time { get; set; }
+        DryMass = dryMass;
+        CrossSectionArea = crossSectionArea;
+        Ve = ve;
+        Cd0 = cd0;
+        TimeData = (double[])timeData.Clone();
+        MassFlowData = (double[])massFlowData.Clone();
 
-        public Rocket(
-            double dryMass,
-            double area,
-            double ve,
-            double cd0,
-            double[] timeData,
-            double[] massFlowData
-            )
-        {
-            DryMass = dryMass;
-            Area = area;
-            Ve = ve;
-            Cd0 = cd0;
-            TimeData = (double[])timeData.Clone();
-            MassFlowData = (double[])massFlowData.Clone();
+        Time = 0.0;
+        Mass = DryMass + Integrate.Romberg(TimeData, MassFlowData);
+    }
 
-            Time = 0.0;
+    public double CalculateMassFlow(double t)
+        => t > TimeData[^1] ? 0.0 : Interp1D.Linear(TimeData, MassFlowData, t);
 
-            Mass = DryMass + Integrate.Romberg(TimeData, MassFlowData);
-        }
+    public static double CalculateWeight(double h, double m)
+        => -1.0 * m * Gravity.GetGravity(h);
 
-        public double CalculateMassFlow(double t)
-            => t > TimeData[^1] ? 0.0 : Interp1D.Linear(TimeData, MassFlowData, t);
+    public double CalculateDrag(double v, double h)
+    {
+        var temperature = Atmosphere.Temperature(h);
+        var cd = Drag.Coefficient(v, temperature, Cd0);
+        
+        var rho = Atmosphere.Density(h);
+        
+        return -0.5 * cd * rho * CrossSectionArea * v * v * Math.Sign(v);
+    }
 
-        public double CalculateThrustForce(double t)
-            => t > TimeData[^1] ? 0.0 : CalculateMassFlow(t) * Ve;
+    public double CalculateThrust(double t)
+        => t > TimeData[^1] ? 0.0 : CalculateMassFlow(t) * Ve;
 
-        public static double CalculateGravity(double h, double m)
-            => -1.0 * m * Gravity.GetGravity(h);
+    public double MomentumEq(double t)
+    {
+        var thrust = CalculateThrust(t);
+        var drag = CalculateDrag(Velocity, Height);
+        var weight = CalculateWeight(Height, Mass);
+        
+        return (thrust + drag + weight) / Mass;
+    }
 
-        public double CalculateDrag(double height, double v)
-        {
-            var temperature = Atmosphere.Temperature(height);
-            var cd = Drag.Coefficient(v, temperature, Cd0);
-            var density = Atmosphere.Density(height);
+    public void UpdateVelocity(double t, double dt)
+    {
+        var accel = MomentumEq(t);
+        Velocity += accel * dt;
+    }
 
-            return -0.5 * cd * density * Area * (v * v) * Math.Sign(v);
-        }
+    public void UpdateHeight(double dt)
+    {
+        Height += Velocity * dt;
+    }
 
-        public double Momentum(double t)
-        {
-            var thrust = CalculateThrustForce(t);
-            var drag = CalculateDrag(Velocity, Height);
-            var weight = CalculateGravity(Height, Mass);
+    public void UpdateMass(double t, double dt)
+    {
+        Mass -= 0.5 * dt * (CalculateMassFlow(t) + CalculateMassFlow(t + dt));
+    }
 
-            return (thrust + drag + weight) / Mass;
-        }
+    public void FlyALittleBit(double dt)
+    {
+        UpdateVelocity(Time, dt);
+        UpdateHeight(dt);
+        UpdateMass(Time, dt);
 
-        public void UpdateVelocity(double t, double dt)
-        {
-            var accel = Momentum(t);
-            Velocity = accel * dt;
-        }
+        Time += dt;
+    }
 
-        public void UpdateHeight(double dt)
-        {
-            Height += Velocity * dt;
-        }
+    public double Launch(double time, double dt = 1e-1)
+    {
+        for (double t = 0.0; t < time; t += dt)
+            FlyALittleBit(dt);
 
-        public void UpdateMass(double t, double dt)
-        {
-            Mass -= 0.5 * dt * (CalculateMassFlow(t) + CalculateMassFlow(t + dt));
-        }
+        return Height;
+    }
 
-        public void FlyALittleBit(double dt)
-        {
-            UpdateVelocity(Time, dt);
-            UpdateHeight(dt);
-            UpdateMass(Time, dt);
+    public double LaunchUntilMax(double dt = 1e-1)
+    {
+        do FlyALittleBit(dt);
+        while (Velocity > 0.0);
 
-            Time += dt;
-        }
+        return Height;
+    }
+    
+    public double LaunchUntilGround(double dt = 1e-1)
+    {
+        do FlyALittleBit(dt);
+        while (Height > 0.0);
 
-        public double Launch(double time, double dt = 1e-1)
-        {
-            for (double t = 0; t < time; t += dt)
-                FlyALittleBit(dt);
-
-            return Height;
-        }
-
-        public double LaunchUntilMax(double dt = 1e-1)
-        {
-            do FlyALittleBit(dt);
-            while (Velocity > 0.0);
-
-            return Height;
-        }
-
-        public double LaunchUntilGround(double dt = 1e-1)
-        {
-            do FlyALittleBit(dt);
-            while (Height > 0.0);
-
-            return Height;
-        }
+        return Height;
     }
 }

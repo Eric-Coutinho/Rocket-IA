@@ -69,16 +69,27 @@ public class DiffEvolution
 
         for (int i = 0; i < NPop; i++)
         {
-            var fitnessCurrent = Fitness(Individuals[i]);
-
-            if (fitnessCurrent < fitnessBest)
+            if (IndividualsFitness[i] < fitnessBest)
             {
                 BestIndividualIndex = i;
-                fitnessBest = fitnessCurrent;
+                fitnessBest = IndividualsFitness[i];
             }
         }
 
         IndividualsFitness[BestIndividualIndex] = fitnessBest;
+    }
+
+    private void EnsureBounds(double[] individual)
+    {
+        for (int i = 0; i < Dimension; i++)
+        {
+            if (individual[i] < Bounds[i][0] || individual[i] > Bounds[i][1])
+                individual[i] = Utils.Rescale(
+                    Random.Shared.NextDouble(),
+                    Bounds[i][0],
+                    Bounds[i][1]
+                );
+        }
     }
 
     private double[] Mutate(int index)
@@ -113,6 +124,8 @@ public class DiffEvolution
                 trial2[i] = trial[i];
         }
 
+        EnsureBounds(trial2);
+
         return trial2;
     }
 
@@ -144,7 +157,10 @@ public class DiffEvolution
         GeneratePopulation();
 
         for (int i = 0; i < n; i++)
+        {
+            Console.WriteLine($"Generation: {i + 1}");
             Iterate();
+        }
 
         return Individuals[BestIndividualIndex];
     }
