@@ -7,8 +7,26 @@ namespace Desafio_Foguete.Search;
 
 public class Search
 {
-    public static int BinarySearch<T>(IEnumerable<T> collection)
+    public static int BinarySearch<T>(List<T> collection, T value, int begin = 0, int end = -1)
     {
-        
+        end = end == -1 ? collection.Count : end;
+        int mid;
+
+        var comparer = Comparer<T>.Default;
+
+        do
+        {
+            mid = (begin + end) / 2;
+            
+            if (comparer.Compare(collection[mid], value) == 0)
+                return mid;
+    
+            if (comparer.Compare(collection[mid], value) < 0)
+                begin = mid +1;
+            else
+                end = mid;
+        } while (end > begin);
+
+        return -1;
     }
 }

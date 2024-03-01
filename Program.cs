@@ -1,5 +1,6 @@
 ﻿using AIContinuous.Nuenv;
 using AIContinuous.Rocket;
+using Desafio_Foguete.Search;
 using Optimize;
 
 // int numberOfPoints = 51;
@@ -47,6 +48,6 @@ using Optimize;
 
 var list = new List<int> { 1, 2, 3, 5, 7, 8, 9 };
 
-var sol = Search.BinarySearch(list, 5);
+var sol = Desafio_Foguete.Search.Search.BinarySearch(list, 81);
 
-Console.WriteLine(sol); // Sol = 3
+Console.WriteLine(sol);
