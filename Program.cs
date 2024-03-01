@@ -1,53 +1,30 @@
-﻿using AIContinuous.Nuenv;
-using AIContinuous.Rocket;
-using Desafio_Foguete.Search;
-using Optimize;
+﻿using AIContinuous;
+using Desafio_Foguete.Collections;
 
-// int numberOfPoints = 51;
-// var timeData = Space.Geometric(1.0, 1001.0, numberOfPoints).Select(x => x - 1.0).ToArray();
 
-// double Simulate(double[] massFlowData)
-// {
-//     var rocket = new Rocket.Rocket(
-//         750.0,
-//         Math.PI * 0.6 * 0.6 / 4.0,
-//         1916.0,
-//         0.8,
-//         timeData,
-//         massFlowData
-//     );
+// Tree 1 - root: 50
+var node = new TreeNode<int>(6);
+node = new TreeNode<int>(21, children : new List<TreeNode<int>> { node });
+var node2 = new TreeNode<int>(45);
+node = new TreeNode<int>(12, children : new List<TreeNode<int>> { node, node2 });
+node = new TreeNode<int>(50, children : new List<TreeNode<int>> { node });
 
-//     return rocket.LaunchUntilMax(1e-3);
-// }
+var tree1 = new Tree<int>(node);
 
-// double FitnessDiffEvol(double[] x) => -1.0 * Simulate(x);
+// Tree 2 - root: 1
+var root = new TreeNode<int>(1);
+root.AddChild(new TreeNode<int>(70))
+    .AddChild(new TreeNode<int>(61));
 
-// double FitnessGD(double[] x)
-// {
-//     var combTotal = Integrate.Romberg(timeData, x);
-//     double penalty = Math.Pow(combTotal - 3500.0, 2);
-//     var minimize = -1.0 * Simulate(x);
+var tree2 = new Tree<int>(root);
 
-//     return minimize + penalty;
-// }
+// Tree 3 - root: 150
+root = new TreeNode<int>(150)
+    .AddChild(new TreeNode<int>(30)
+            .AddChild(new TreeNode<int>(96))
+            .AddChild(new TreeNode<int>(9))
+            )
+    .AddChild(new TreeNode<int>(5))
+    .AddChild(new TreeNode<int>(11));
 
-// double Restriction(double[] x)
-//     => Integrate.Romberg(timeData, x) - 3500.0;
 
-// var bounds = new List<double[]>(numberOfPoints);
-// for (int i = 0; i < numberOfPoints; i++)
-//     bounds.Add(new double[] { 0.0, 1000.0 });
-
-// var diffEvol = new DiffEvolution(FitnessDiffEvol, bounds, 15 * numberOfPoints, Restriction);
-// var sol = diffEvol.Optimize(10000);
-
-// foreach (var s in sol)
-//     Console.WriteLine(s);
-
-// Console.WriteLine($"Altitude maxima: {Simulate(sol)}");
-
-var list = new List<int> { 1, 2, 3, 5, 7, 8, 9 };
-
-var sol = Desafio_Foguete.Search.Search.BinarySearch(list, 81);
-
-Console.WriteLine(sol);

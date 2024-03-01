@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Desafio_Foguete.Search;
+namespace Desafio_Foguete.Collections;
 
 public class Search
 {
