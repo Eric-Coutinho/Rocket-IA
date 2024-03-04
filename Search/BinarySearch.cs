@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Desafio_Foguete.Collections;
+namespace Desafio_Foguete.Search;
 
-public class Search
+public class BinarySearch
 {
-    public static int BinarySearch<T>(List<T> collection, T value, int begin = 0, int end = -1)
+    public static int Search<T>(List<T> collection, T value, int begin = 0, int end = -1)
     {
         end = end == -1 ? collection.Count : end;
         int mid;

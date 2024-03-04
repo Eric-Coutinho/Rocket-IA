@@ -1,9 +1,14 @@
 ﻿using AIContinuous;
 using Desafio_Foguete.Collections;
+using Desafio_Foguete.Search;
 
 var tree = BuildTree();
 Console.WriteLine(tree);
+var found = Search.DFSearch(tree.Root, 9);
+Console.WriteLine($"Goal found: {found}");
+
 return;
+
 
 Tree<int> BuildTree()
 {
