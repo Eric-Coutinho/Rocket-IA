@@ -14,15 +14,15 @@ public class GraphNode<T> : INode<T>
     public GraphNode
     (
         T value = default(T),
-        List<GraphNode<T>> neighbours = null!
+        List<GraphNode<T>> neighbors = null!
     )
     {
         Value = value;
-        Neighbors = neighbours ?? new List<GraphNode<T>>();
+        Neighbors = neighbors ?? new List<GraphNode<T>>();
 
-        foreach (var neighbour in Neighbors)
-            if (!neighbour.Neighbors.Contains(this))
-                neighbour.Neighbors.Add(this);
+        foreach (var neighbor in Neighbors)
+            if (!neighbor.Neighbors.Contains(this))
+                neighbor.Neighbors.Add(this);
     }
 
     public GraphNode<T> AddNode(GraphNode<T> graphNode)
