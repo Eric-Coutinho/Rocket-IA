@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Desafio_Foguete.Collections;
 
-public class Node<T> : INode<T>
+public class GraphNode<T> : INode<T>
 {
     public T Value { get; set; }
     public List<Node<T>> Neighbors { get; set; }
@@ -17,13 +17,17 @@ public class Node<T> : INode<T>
         Neighbors = neighbors ?? new List<Node<T>>();
 
         foreach (var neighbor in Neighbors)
-            neighbor.Neighbors.Add(this);
+            if (!neighbor.Neighbors.Contains(this))
+                neighbor.Neighbors.Add(this);
     }
 
-    public Node<T> AddNode(Node<T> node)
+    public Node<T> AddNode(Node<T> graphNode)
     {
-        Neighbors.Add(node);
-        node.Neighbors.Add(this);
+        if (Neighbors.Contains(graphNode))
+            Neighbors.Add(graphNode);
+
+        if (!Neighbors.Contains(graphNode))
+            node.Neighbors.Add(this);
 
         return this;
     }

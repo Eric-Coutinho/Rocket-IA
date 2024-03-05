@@ -58,7 +58,7 @@ using Desafio_Foguete.Search;
 //     return tree5;
 // }
 
-var nodePortland = new Node<string>("Portland");
-var nodeBoston = new Node<string>("Boston");
+var nodePortland = new GraphNode<string>("Portland");
+var nodeBoston = new GraphNode<string>("Boston");
 
 nodePortland.AddNode(nodeBoston);

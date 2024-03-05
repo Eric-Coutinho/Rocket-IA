@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 
 namespace Desafio_Foguete.Collections;
 
-public class Graph<T> : Node<T>
+public class Graph<T> : GraphNode<T>
 {
-    public Graph(T value, List<Node<T>> neighbors = null!) : base(value, neighbors) {  }
+    public List<GraphNode<T>> Nodes { get; set; }
+    public Graph(T value, List<Node<T>> nodes = null!)
+    { 
+        Nodes == nodes ?? List<Node<T>>();
+    }
 }
