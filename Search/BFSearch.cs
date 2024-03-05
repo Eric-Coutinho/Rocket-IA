@@ -7,18 +7,27 @@ using Desafio_Foguete.Collections;
 namespace Desafio_Foguete.Search;
 public static partial class Search
 {
-    public static bool BFSearch<T>(TreeNode<T> node, T goal)
+    public static bool BFSearch<T, TNode>(SearchNode<T, TNode> node, T goal) where TNode : INode<T>
     {
-        var queue = new Queue<TreeNode<T>>();
+        var queue = new Queue<SearchNode<T, TNode>>();
         queue.Enqueue(node);
 
-        while(queue.Count > 0)
+        while (queue.Count > 0)
         {
             var currNode = queue.Dequeue();
-            if (EqualityComparer<T>.Default.Equals(currNode.Value, goal))
-            return true;
 
-            foreach (var child in currNode.Children)
+            if (currNode.Visited)
+                continue;
+
+            currNode.Visited = true;
+
+            if (EqualityComparer<T>.Default.Equals(currNode.Node.Value, goal))
+            {
+                currNode.IsSolution = true;
+                return true;
+            }
+
+            foreach (var child in currNode.Neighbors())
                 queue.Enqueue(child);
         }
 

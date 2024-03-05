@@ -8,34 +8,37 @@ namespace Desafio_Foguete.Collections;
 public class GraphNode<T> : INode<T>
 {
     public T Value { get; set; }
-    public List<Node<T>> Neighbors { get; set; }
+    public List<GraphNode<T>> Neighbors { get; set; }
     public int Connections => Neighbors.Count;
 
-    public Node(T value = default(T), List<Node<T>> neighbors = null!)
+    public GraphNode
+    (
+        T value = default(T),
+        List<GraphNode<T>> neighbours = null!
+    )
     {
         Value = value;
-        Neighbors = neighbors ?? new List<Node<T>>();
+        Neighbors = neighbours ?? new List<GraphNode<T>>();
 
-        foreach (var neighbor in Neighbors)
-            if (!neighbor.Neighbors.Contains(this))
-                neighbor.Neighbors.Add(this);
+        foreach (var neighbour in Neighbors)
+            if (!neighbour.Neighbors.Contains(this))
+                neighbour.Neighbors.Add(this);
     }
 
-    public Node<T> AddNode(Node<T> graphNode)
+    public GraphNode<T> AddNode(GraphNode<T> graphNode)
     {
-        if (Neighbors.Contains(graphNode))
-            Neighbors.Add(graphNode);
-
         if (!Neighbors.Contains(graphNode))
-            node.Neighbors.Add(this);
+            Neighbors.Add(graphNode);
+        if (!graphNode.Neighbors.Contains(this))
+            graphNode.Neighbors.Add(this);
 
         return this;
     }
 
-    public Node<T> RemoveNode(Node<T> node)
+    public GraphNode<T> RemoveNode(GraphNode<T> graphNode)
     {
-        Neighbors.Remove(node);
-        node.Neighbors.Remove(this);
+        Neighbors.Remove(graphNode);
+        graphNode.Neighbors.Remove(this);
 
         return this;
     }

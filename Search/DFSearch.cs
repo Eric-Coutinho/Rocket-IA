@@ -8,15 +8,19 @@ namespace Desafio_Foguete.Search;
 
 public static partial class Search
 {
-    public static bool DFSearch<T>(TreeNode<T> node, T goal)
+    public static bool DFSearch<T, TNode>(SearchNode<T, TNode> node, T goal) where TNode : INode<T>
     {
-        if (EqualityComparer<T>.Default.Equals(node.Value, goal))
-            return true;
-        
-        foreach (var currNode in node.Children)
-            if (DFSearch<T>(currNode, goal))
-                return true;
+        if (node.Visited)
+            return false;
 
-        return false;
+        node.Visited = true;
+
+        if (EqualityComparer<T>.Default.Equals(node.Node.Value, goal))
+        {
+            node.IsSolution = true;
+            return true;
+        }
+
+        return node.Neighbors().Any(neighbor => !neighbor.Visited && DFSearch<T, TNode>(neighbor, goal));
     }
 }

@@ -8,8 +8,9 @@ namespace Desafio_Foguete.Collections;
 public class Graph<T> : GraphNode<T>
 {
     public List<GraphNode<T>> Nodes { get; set; }
-    public Graph(T value, List<Node<T>> nodes = null!)
-    { 
-        Nodes == nodes ?? List<Node<T>>();
+
+    public Graph(List<GraphNode<T>> nodes = null!)
+    {
+        Nodes = nodes ?? new List<GraphNode<T>>();
     }
 }
